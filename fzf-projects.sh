@@ -32,7 +32,7 @@ then
 fi
 
 projectsPath="${configuredPath/#\~/$HOME}"
-projects=$(find "$projectsPath" -type d -maxdepth 5 -name .git -prune -exec dirname {} \;)
+projects=$(find "$projectsPath" -maxdepth 5 -type d -name .git -prune -exec dirname {} \;)
 selected=$(printf "$projects" | fzf --no-multi --color=16 --cycle --preview-window=border-left --preview='(cd {1} && [ -f README.* ] && cat README.* || ls -l)')
 
 if [ ! -z "$selected" ]
