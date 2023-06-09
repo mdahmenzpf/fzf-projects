@@ -4,12 +4,21 @@ dir=$( dirname -- "$0"; )
 configFile="$dir/.config"
 
 editConfig() {
-	read -p "Projects directory: " input 
+	read -p "Projects directory: " inputRoot 
+	read -p "Editor: " inputEditor
 
-	if [ "$input" != '' ]
+	if [ "$inputRoot" == '' ]
 	then
-		echo $input > "$configFile"
+		inputRoot='~'
 	fi
+
+	if [ "$inputEditor" == '' ]
+	then
+		inputEditor="nvim"
+	fi
+
+	echo "FD_ROOT=\"$inputRoot\"" > "$configFile"
+	echo "FD_CMD=($inputEditor)" >> "$configFile" 
 }
 
 if [ ! -f "$configFile" ]
@@ -24,19 +33,19 @@ while getopts ":c" option; do
 	esac
 done
 
-configuredPath=$(cat "$configFile")
+source "$configFile"
 
-if [ -z "$configuredPath" ]
+if [ -z "$FD_ROOT" ]
 then
 	exit
 fi
 
-projectsPath="${configuredPath/#\~/$HOME}"
+projectsPath="${FD_ROOT/#\~/$HOME}"
 projects=$(find "$projectsPath" -maxdepth 5 -type d -name .git -prune -exec dirname {} \;)
 selected=$(printf "$projects" | fzf --no-multi --color=16 --cycle --preview-window=border-left --preview='(cd {1} && [ -f README.* ] && cat README.* || ls -l)')
 
 if [ ! -z "$selected" ]
 then
 	cd $selected
-	nvim
+	"${FD_CMD[@]}"
 fi
